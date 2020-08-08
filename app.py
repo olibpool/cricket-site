@@ -14,16 +14,23 @@ def hello_world():
     if request.method == 'POST':
         # Take the name that the user inputted:
         name = request.form.get("name")
-        
+
+        # Check what the user wants to analyse:
+        batorbowl = request.form.get("batorbowl")
+        if batorbowl == "bat":
+            which = 'InningsBattedFlag=1'
+        elif batorbowl == "bowl":
+            which = 'InningsBowledFlag=1'
+        else:
+            which = 'InningsBattedFlag=1 AND InningsBowledFlag=1'
+
+        TestorODI = request.form.get("TestorODI")
+
+        print(TestorODI)
 
         # Connect to the stats database:
-        conn = sqlite3.connect("stats.db")
-        c = conn.cursor()
 
-        c.execute("SELECT :batorbowl")
-
-
-
+        return render_template('index.html')
     else:
         return render_template('index.html')
 
