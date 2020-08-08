@@ -1,0 +1,26 @@
+{%  extends "layout.html" %}
+
+{%  block title %}
+    Cricket!
+{%  endblock %}
+
+{% block header %}
+    <h1>Enter the name of a cricket player:</h1>
+{% endblock %}
+
+{%  block bodytext %}
+    <form>
+    <div>
+        <input name="name" type="text" placeholder="Player Name">
+    </div>
+    <div style="margin-top: 0.5%">
+        <p>What do you want to anlayse?
+            <select name="batorbowl">
+                <option>Batting</option>
+                <option>Bowling</option>
+                <option>Both</option>
+            </select>
+        </p>
+    </div>
+    </form>
+{%  endblock %}
