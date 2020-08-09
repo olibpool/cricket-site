@@ -1,8 +1,12 @@
-from flask import Flask, request, render_template
+import base64
+
+from flask import Flask, request, render_template, make_response, Response
 import sqlite3
 import codecs
 import matplotlib.pyplot as plt
-import sys
+import io
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
 
 
 def quote_identifier(s, errors="strict"):
@@ -152,18 +156,31 @@ def hello_world():
         batmatchstats.append((match, date, runs, outs))
         bowlmatchstats.append((match, date, bowlruns, wickets))
 
+        # Plotting the data
+        fig = plt.figure()
+        ax = fig.add_subplot()
         if batorbowl in ["Batting", "Both"]:
-            plt.plot(range(1, match + 1), cumulativebat, label="Batting average")
+            ax.plot(range(1, match + 1), cumulativebat, label="Batting average")
         if batorbowl in ["Bowling", "Both"]:
-            plt.plot(range(1, match + 1), cumulativebowl, label="Bowling average")
-        plt.axis([0, match + 2, 0, graphmax + 5])
-        plt.xlabel('Number of matches')
-        plt.ylabel('Average')
-        plt.title(str(TestorODI) + ' averages for ' + str(name))
-        plt.legend()
-        plt.show()
+            ax.plot(range(1, match + 1), cumulativebowl, label="Bowling average")
+        ax.set_xlim(0, match + 2)
+        ax.set_ylim(0, graphmax + 5)
+        ax.set_xlabel('Number of matches')
+        ax.set_ylabel('Average')
+        ax.set_title(str(TestorODI) + ' averages for ' + str(name))
+        ax.legend()
+        ax.grid(alpha=100)
 
-        return render_template('index.html')
+        # Convert plot to PNG image
+        output = io.BytesIO()
+        FigureCanvas(fig).print_png(output)
+
+        # Encode PNG image to base64 string
+        pngImageB64String = "data:image/png;base64,"
+        pngImageB64String += base64.b64encode(output.getvalue()).decode('utf8')
+
+        return render_template("output.html", graph=pngImageB64String,
+                               bowlmatchstats=bowlmatchstats, batmatchstats=batmatchstats)
     else:
         return render_template('index.html')
 
