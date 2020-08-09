@@ -3,7 +3,7 @@ import codecs
 import io
 import sqlite3
 import matplotlib.pyplot as plt
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, flash, redirect
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
 
@@ -28,14 +28,15 @@ app.config['ENV'] = "development"
 app.config['DEBUG'] = True
 app.config['TESTING'] = True
 app.config['TEMPLATES_AUTO_RELOAD'] = True
+app.config['SECRET_KEY'] = 'p2fAJzrORrIWVyRE3kI0eA'
 
 
 @app.route('/', methods=['GET', 'POST'])
 def main_page():
     if request.method == 'POST':
         # Take the name that the user inputted:
-        name = request.form.get("name")
-        name = "'" + name + "'"
+        nametest = request.form.get("name")
+        name = "'" + nametest + "'"
 
         # Check what the user wants to analyse:
         batorbowl = request.form.get("batorbowl")
@@ -54,17 +55,30 @@ def main_page():
 
         # Get last matchdate:
         c.execute(
-            "SELECT InningsDate FROM " + quote_identifier(TestorODI).strip('\"') + " ORDER BY InningsDate DESC LIMIT 1")
-        last = c.fetchone()[0]
+            "SELECT InningsDate FROM " + quote_identifier(TestorODI).strip('\"') + " WHERE InningsPlayer=" +
+            quote_identifier(name).strip('\"') + " ORDER BY InningsDate DESC LIMIT 1")
+
+        check = c.fetchone()
+
+        print(name)
+
+        if nametest == '':
+            msg = "Make sure to put in a player's name before clicking analyse!\n"
+        else:
+            msg = "There is no player in the database called " + str(name) + \
+                  ".\nMake sure you use the standard format for scorecards (e.g BA Stokes)."
+
+        if check is None:
+            flash(msg)
+            return redirect("/")
+
+        last = check[0]
 
         # Get data from stats.db
         data = c.execute(
-            "SELECT DISTINCT * FROM " + quote_identifier(TestorODI).strip('\"') + " WHERE (" + quote_identifier(which).strip(
+            "SELECT DISTINCT * FROM " + quote_identifier(TestorODI).strip('\"') + " WHERE (" + quote_identifier(
+                which).strip(
                 '\"') + " AND InningsPlayer=" + quote_identifier(name).strip('\"') + ")")
-
-        if data == "":
-            print("There is no player in the database called " + str(name))
-            print("Make sure you use the format used by cricinfo (e.g BA Stokes).")
 
         # Initialising variables
         batmatchstats = [('Match Number', 'Match Date', 'Opposition', 'Ground', 'Runs Scored', 'Number of Dismissals')]
@@ -84,6 +98,8 @@ def main_page():
         firstrow = True
         lastrow = False
         date = "blah"
+        opp = "blah"
+        ground = "blah"
         i = 0
 
         # Generate player data in list
@@ -156,6 +172,7 @@ def main_page():
         bowlmatchstats.append((match, date, opp, ground, bowlruns, wickets))
 
         # Plotting the data
+        plt.style.use('Solarize_Light2')
         fig = plt.figure()
         ax = fig.add_subplot()
         if batorbowl in ["Batting", "Both"]:
@@ -179,7 +196,8 @@ def main_page():
         pngImageB64String += base64.b64encode(output.getvalue()).decode('utf8')
 
         return render_template("output.html", graph=pngImageB64String,
-                               bowlmatchstats=bowlmatchstats, batmatchstats=batmatchstats, which=batorbowl)
+                               bowlmatchstats=bowlmatchstats, batmatchstats=batmatchstats, which=batorbowl,
+                               batavg=round(cumulativebat[-1],2), bowlavg=round(cumulativebowl[-1],2))
     else:
         return render_template('index.html')
 

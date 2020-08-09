@@ -10,25 +10,47 @@
 {% endblock %}
 
 {%  block bodytext %}
-    <form action="/" method="post">
-    <div>
-        <input name="name" type="text" placeholder="Player Name">
+    <div class="container">
+        <form action="/" method="post">
+            <div class="row justify-content-center mt-3">
+                <div class="col-sm-4">
+                    <input class="form-control" name="name" type="text" placeholder="Player Name">
+                </div>
+            </div>
+
+            <div class="row justify-content-center mt-2">
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label for="batorobowlmenu">Do you want to analyse batting or bowling?</label>
+                        <select class="form-control" name="batorbowl" id="batorobowlmenu">
+                            <option>Batting</option>
+                            <option>Bowling</option>
+                            <option>Both</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-sm-4">
+                    <label for="TestorODImenu">Which format do you want to analyse?</label>
+                    <select class="form-control" name="TestorODI" id="TestorODImenu">
+                        <option>Test</option>
+                        <option>ODI</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row justify-content-center mt-2">
+                <input class="btn btn-danger" type="submit" value="Analyse!">
+            </div>
+
+            <div class="row justify-content-center mt-3">
+                {% for message in get_flashed_messages() %}
+                <div class="alert alert-warning">
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+        </form>
     </div>
-    <div style="margin-top: 0.5%">
-        <p>What do you want to analyse?
-            <select name="batorbowl">
-                <option>Batting</option>
-                <option>Bowling</option>
-                <option>Both</option>
-            </select>
-        </p>
-        <p>Which format do you want to analyse?
-            <select name="TestorODI">
-                <option>Test</option>
-                <option>ODI</option>
-            </select>
-        </p>
-        <input name="submit" type="submit" value="Analyse!">
-    </div>
-    </form>
 {%  endblock %}
