@@ -1,7 +1,9 @@
 from flask import Flask, request, render_template
 import sqlite3
 import codecs
+import matplotlib.pyplot as plt
 import sys
+
 
 def quote_identifier(s, errors="strict"):
     encodable = s.encode("utf-8", errors).decode("utf-8")
@@ -16,6 +18,7 @@ def quote_identifier(s, errors="strict"):
         encodable = encodable.replace("\x00", replacement)
 
     return "\"" + encodable.replace("\"", "\"\"") + "\""
+
 
 app: Flask = Flask(__name__)
 
@@ -34,9 +37,9 @@ def hello_world():
 
         # Check what the user wants to analyse:
         batorbowl = request.form.get("batorbowl")
-        if batorbowl == "bat":
+        if batorbowl == "Batting":
             which = 'InningsBattedFlag=1'
-        elif batorbowl == "bowl":
+        elif batorbowl == "Bowling":
             which = 'InningsBowledFlag=1'
         else:
             which = '(InningsBattedFlag=1 OR InningsBowledFlag=1)'
@@ -48,14 +51,17 @@ def hello_world():
         c = conn.cursor()
 
         # Get last matchdate:
-        c.execute("SELECT InningsDate FROM " + quote_identifier(TestorODI).strip('\"') + " ORDER BY InningsDate DESC LIMIT 1")
+        c.execute(
+            "SELECT InningsDate FROM " + quote_identifier(TestorODI).strip('\"') + " ORDER BY InningsDate DESC LIMIT 1")
         last = c.fetchone()[0]
-        
+
         # Get data from stats.db
-        data = c.execute("SELECT * FROM " + quote_identifier(TestorODI).strip('\"') + " WHERE (" + quote_identifier(which).strip('\"') + " AND InningsPlayer=" + quote_identifier(name).strip('\"') + ")")
+        data = c.execute(
+            "SELECT * FROM " + quote_identifier(TestorODI).strip('\"') + " WHERE (" + quote_identifier(which).strip(
+                '\"') + " AND InningsPlayer=" + quote_identifier(name).strip('\"') + ")")
 
         if data == "":
-            print("There is no player in the database called " + str(player))
+            print("There is no player in the database called " + str(name))
             print("Make sure you use the format used by cricinfo (e.g BA Stokes).")
 
         # Initialising variables
@@ -80,20 +86,21 @@ def hello_world():
 
         # Generate player data in list
         for rowdata in data:
+            print(rowdata[21])
             if rowdata[13] != date or lastrow == True:
-                if firstrow != True:
-                    
+                if not firstrow:
+
                     totruns += runs
                     totouts += outs
                     totbowlruns += bowlruns
                     totwickets += wickets
-                    
+
                     if totouts != 0:
-                        cumulativebat.append(totruns/totouts)
+                        cumulativebat.append(totruns / totouts)
                     else:
                         cumulativebat.append(0)
                     if totwickets != 0:
-                        cumulativebowl.append(totbowlruns/totwickets)
+                        cumulativebowl.append(totbowlruns / totwickets)
                     else:
                         cumulativebowl.append(0)
                     if cumulativebat[match - 1] > graphmax:
@@ -103,7 +110,7 @@ def hello_world():
 
                     batmatchstats.append((match, date, runs, outs))
                     bowlmatchstats.append((match, date, bowlruns, wickets))
-                    
+
                     match += 1
                     runs = 0
                     outs = 0
@@ -115,29 +122,26 @@ def hello_world():
 
                 date = rowdata[13]
 
-                
-
             if rowdata[4] == 1:
                 runs += int(rowdata[2])
                 if int(rowdata[5]) != 1:
                     outs += 1
-            else:
-                if rowdata[19] == 1:
-                    bowlruns += int(rowdata[21])
-                    wickets += int(rowdata[22])
+            elif rowdata[19] == 1:
+                bowlruns += int(rowdata[21])
+                wickets += int(rowdata[22])
 
         # Add last match to data:
         totruns += runs
         totouts += outs
         totbowlruns += bowlruns
         totwickets += wickets
-        
+
         if totouts != 0:
-            cumulativebat.append(totruns/totouts)
+            cumulativebat.append(totruns / totouts)
         else:
             cumulativebat.append(0)
         if totwickets != 0:
-            cumulativebowl.append(totbowlruns/totwickets)
+            cumulativebowl.append(totbowlruns / totwickets)
         else:
             cumulativebowl.append(0)
         if cumulativebat[match - 1] > graphmax:
@@ -148,18 +152,17 @@ def hello_world():
         batmatchstats.append((match, date, runs, outs))
         bowlmatchstats.append((match, date, bowlruns, wickets))
 
-        if batyes == True:
-            plt.plot(range(1, match), cumulativebat, label = "Batting average")
-        if bowlyes == True:
-            plt.plot(range(1, match), cumulativebowl, label = "Bowling average")
-        plt.axis([0,match,0,graphmax + 5])
+        if batorbowl in ["Batting", "Both"]:
+            plt.plot(range(1, match + 1), cumulativebat, label="Batting average")
+        if batorbowl in ["Bowling", "Both"]:
+            plt.plot(range(1, match + 1), cumulativebowl, label="Bowling average")
+        plt.axis([0, match + 2, 0, graphmax + 5])
         plt.xlabel('Number of matches')
         plt.ylabel('Average')
-        plt.title(str(matchtype) + ' averages for ' + str(player))
+        plt.title(str(TestorODI) + ' averages for ' + str(name))
         plt.legend()
         plt.show()
 
-        print(batmatchstats)
         return render_template('index.html')
     else:
         return render_template('index.html')
