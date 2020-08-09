@@ -1,12 +1,10 @@
 import base64
-
-from flask import Flask, request, render_template, make_response, Response
-import sqlite3
 import codecs
-import matplotlib.pyplot as plt
 import io
+import sqlite3
+import matplotlib.pyplot as plt
+from flask import Flask, request, render_template
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-from matplotlib.figure import Figure
 
 
 def quote_identifier(s, errors="strict"):
@@ -33,7 +31,7 @@ app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 
 @app.route('/', methods=['GET', 'POST'])
-def hello_world():
+def main_page():
     if request.method == 'POST':
         # Take the name that the user inputted:
         name = request.form.get("name")
@@ -61,7 +59,7 @@ def hello_world():
 
         # Get data from stats.db
         data = c.execute(
-            "SELECT * FROM " + quote_identifier(TestorODI).strip('\"') + " WHERE (" + quote_identifier(which).strip(
+            "SELECT DISTINCT * FROM " + quote_identifier(TestorODI).strip('\"') + " WHERE (" + quote_identifier(which).strip(
                 '\"') + " AND InningsPlayer=" + quote_identifier(name).strip('\"') + ")")
 
         if data == "":
@@ -69,8 +67,8 @@ def hello_world():
             print("Make sure you use the format used by cricinfo (e.g BA Stokes).")
 
         # Initialising variables
-        batmatchstats = [('Match Number', 'Match Date', 'Runs Scored', 'Number of Dismissals')]
-        bowlmatchstats = [('Match Number', 'Match Date', 'Runs Conceeded', 'Wickets')]
+        batmatchstats = [('Match Number', 'Match Date', 'Opposition', 'Ground', 'Runs Scored', 'Number of Dismissals')]
+        bowlmatchstats = [('Match Number', 'Match Date', 'Opposition', 'Ground', 'Runs Conceded', 'Wickets')]
         cumulativebat = []
         cumulativebowl = []
         graphmax = 0
@@ -90,8 +88,7 @@ def hello_world():
 
         # Generate player data in list
         for rowdata in data:
-            print(rowdata[21])
-            if rowdata[13] != date or lastrow == True:
+            if rowdata[13] != date or lastrow:
                 if not firstrow:
 
                     totruns += runs
@@ -112,8 +109,8 @@ def hello_world():
                     if cumulativebowl[match - 1] > graphmax:
                         graphmax = cumulativebowl[match - 1]
 
-                    batmatchstats.append((match, date, runs, outs))
-                    bowlmatchstats.append((match, date, bowlruns, wickets))
+                    batmatchstats.append((match, date, opp, ground, runs, outs))
+                    bowlmatchstats.append((match, date, opp, ground, bowlruns, wickets))
 
                     match += 1
                     runs = 0
@@ -124,6 +121,8 @@ def hello_world():
                 else:
                     firstrow = False
 
+                opp = rowdata[11]
+                ground = rowdata[12]
                 date = rowdata[13]
 
             if rowdata[4] == 1:
@@ -153,8 +152,8 @@ def hello_world():
         if cumulativebowl[match - 1] > graphmax:
             graphmax = cumulativebowl[match - 1]
 
-        batmatchstats.append((match, date, runs, outs))
-        bowlmatchstats.append((match, date, bowlruns, wickets))
+        batmatchstats.append((match, date, opp, ground, runs, outs))
+        bowlmatchstats.append((match, date, opp, ground, bowlruns, wickets))
 
         # Plotting the data
         fig = plt.figure()
@@ -180,7 +179,7 @@ def hello_world():
         pngImageB64String += base64.b64encode(output.getvalue()).decode('utf8')
 
         return render_template("output.html", graph=pngImageB64String,
-                               bowlmatchstats=bowlmatchstats, batmatchstats=batmatchstats)
+                               bowlmatchstats=bowlmatchstats, batmatchstats=batmatchstats, which=batorbowl)
     else:
         return render_template('index.html')
 

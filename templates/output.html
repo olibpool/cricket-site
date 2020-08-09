@@ -8,6 +8,38 @@
     <h1>Here is your player analysis:</h1>
 {% endblock %}
 
-{%  block bodytext %}
-    <img src="{{ graph }}" alt="Graph of average(s)"/>
+{% block bodytext %}
+    <img class="img-fluid" alt="Graph of average(s)" src="{{ graph }}"/>
+    <h3 style="font-weight: bold">Career Summary:</h3>
+    <table class="table">
+        <tr>
+            <th>Match</th>
+            <th>Date</th>
+            <th>Opposition</th>
+            <th>Ground</th>
+            {% if which in ['Batting', 'Both'] %}
+                <th>Runs Scored</th>
+            {% endif %}
+            {% if which in ['Bowling', 'Both'] %}
+                <th>Wickets</th>
+                <th>Runs Conceded</th>
+            {% endif %}
+        </tr>
+        {% for i in range(1, batmatchstats|length) %}
+        <tr>
+            <td>{{ batmatchstats[i][0] }}</td>
+            <td>{{ batmatchstats[i][1] }}</td>
+            <td>{{ batmatchstats[i][2] }}</td>
+            <td>{{ batmatchstats[i][3] }}</td>
+            {% if which in ['Batting', 'Both'] %}
+                <td>{{ batmatchstats[i][4] }}</td>
+            {%  endif %}
+            {% if which in ['Bowling', 'Both'] %}
+                <td>{{ bowlmatchstats[i][5] }}</td>
+                <td>{{ bowlmatchstats[i][4] }}</td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </table>
+
 {%  endblock %}
