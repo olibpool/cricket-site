@@ -62,6 +62,7 @@ def main_page():
 
         print(name)
 
+        # Checking player exists
         if nametest == '':
             msg = "Make sure to put in a player's name before clicking analyse!\n"
         else:
@@ -203,4 +204,4 @@ def main_page():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host="0.0.0.0")
