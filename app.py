@@ -23,11 +23,6 @@ def quote_identifier(s, errors="strict"):
 
 
 app: Flask = Flask(__name__)
-
-app.config['ENV'] = "development"
-app.config['DEBUG'] = True
-app.config['TESTING'] = True
-app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config['SECRET_KEY'] = 'p2fAJzrORrIWVyRE3kI0eA'
 
 
