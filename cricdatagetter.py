@@ -5,7 +5,7 @@ from time import sleep
 
 # TODO Add comments
 
-db = sqlite3.connect("../stats.db")
+db = sqlite3.connect("stats.db")
 c: Cursor = db.cursor()
 
 countries = {'ENG': "v England", 'IND': "v India", 'AUS': "v Australia", 'PAK': "v Pakistan", 'WI': "v West Indies",
