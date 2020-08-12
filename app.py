@@ -406,7 +406,7 @@ def rolling_page():
             ax.plot(range(period, match + 1), rollingbat, label="Batting average")
         if batorbowl in ["Bowling", "Both"]:
             ax.plot(range(period, match + 1), rollingbowl, label="Bowling average")
-        ax.set_xlim(0, match + 2)
+        ax.set_xlim(period, match + 2)
         ax.set_ylim(0, rollgraphmax + 5)
         ax.set_xlabel('Number of matches')
         ax.set_ylabel('Average')
