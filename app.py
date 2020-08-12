@@ -72,7 +72,7 @@ def main_page():
         data = c.execute(
             "SELECT DISTINCT * FROM " + quote_identifier(TestorODI).strip('\"') + " WHERE (" + quote_identifier(
                 which).strip(
-                '\"') + " AND InningsPlayer=" + quote_identifier(name).strip('\"') + ")")
+                '\"') + " AND InningsPlayer=" + quote_identifier(name).strip('\"') + ") ORDER BY InningsDate")
 
         # Initialising variables
         batmatchstats = [('Match Number', 'Match Date', 'Opposition', 'Ground', 'Runs Scored', 'Number of Dismissals')]
@@ -263,7 +263,7 @@ def rolling_page():
         data = c.execute(
             "SELECT DISTINCT * FROM " + quote_identifier(TestorODI).strip('\"') + " WHERE (" + quote_identifier(
                 which).strip(
-                '\"') + " AND InningsPlayer=" + quote_identifier(name).strip('\"') + ")")
+                '\"') + " AND InningsPlayer=" + quote_identifier(name).strip('\"') + ") ORDER BY InningsDate")
 
         # Initialising variables
         batmatchstats = [('Match Number', 'Match Date', 'Opposition', 'Ground', 'Runs Scored', 'Number of Dismissals')]
@@ -424,4 +424,4 @@ def rolling_page():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0")
+    app.run()
