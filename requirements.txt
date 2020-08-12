@@ -2,3 +2,4 @@ Flask
 matplotlib
 python-espncricinfo
 bs4
+gunicorn
