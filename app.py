@@ -226,12 +226,6 @@ def rolling_page():
 
         check = c.fetchone()
 
-        if period == '':
-            flash("Make sure to write in a period to analyse over!")
-            return redirect("/rolling", 403)
-
-        period = int(period)
-
         # Checking player exists
         if nametest == '':
             msg = "Make sure to put in a player's name before clicking analyse!\n"
@@ -240,7 +234,7 @@ def rolling_page():
                   ".\nMake sure you use the standard format for scorecards (e.g BA Stokes)."
         if check is None:
             flash(msg)
-            return redirect("/rolling", 403)
+            return redirect("/rolling")
 
         c.execute("SELECT DISTINCT COUNT(DISTINCT InningsDate) FROM " +
                            quote_identifier(TestorODI).strip('\"') + " WHERE InningsPlayer="
@@ -248,14 +242,20 @@ def rolling_page():
 
         numofgames = c.fetchone()[0]
 
+        if period == '':
+            flash("Make sure to write in a period to analyse over!")
+            return redirect("/rolling")
+
+        period = int(period)
+
         if period < 1:
             flash("Make sure to write a positive integer in the rolling average box!")
-            return redirect("/rolling", 403)
+            return redirect("/rolling")
 
         if int(numofgames) < period:
             msg = name + "has only played " + str(numofgames) + TestorODI + " games, choose a smaller interval."
             flash(msg)
-            return redirect("/rolling", 403)
+            return redirect("/rolling")
 
         last = check[0]
 
