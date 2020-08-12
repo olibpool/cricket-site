@@ -55,8 +55,6 @@ def main_page():
 
         check = c.fetchone()
 
-        print(name)
-
         # Checking player exists
         if nametest == '':
             msg = "Make sure to put in a player's name before clicking analyse!\n"
@@ -249,14 +247,13 @@ def rolling_page():
                            + quote_identifier(name).strip('\"'))
 
         numofgames = c.fetchone()[0]
-        print(numofgames)
 
-        if period < 0:
+        if period < 1:
             flash("Make sure to write a positive integer in the rolling average box!")
             return redirect("/rolling", 403)
 
         if int(numofgames) < period:
-            msg = name + "has only played " + str(numofgames) + TestorODI + "games, choose a smaller interval."
+            msg = name + "has only played " + str(numofgames) + TestorODI + " games, choose a smaller interval."
             flash(msg)
             return redirect("/rolling", 403)
 
@@ -394,9 +391,6 @@ def rolling_page():
                 if batorbowl in ['Bowling', 'Both']:
                     if rollingbowl[-1] > rollgraphmax:
                         rollgraphmax = rollingbowl[-1]
-
-        print(len(rollingbat))
-        print(len(rollingbowl))
 
         # Plotting the data
         plt.style.use('Solarize_Light2')
