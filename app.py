@@ -253,7 +253,8 @@ def rolling_page():
             return redirect("/rolling")
 
         if int(numofgames) < period:
-            msg = name + "has only played " + str(numofgames) + TestorODI + " games, choose a smaller interval."
+            msg = name + " has only played " + str(numofgames) + " " + \
+                  TestorODI + " games, choose a smaller interval."
             flash(msg)
             return redirect("/rolling")
 
