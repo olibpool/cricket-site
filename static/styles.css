@@ -3,16 +3,15 @@ table {
     font-size: xx-large;
 }
 
-@media screen and (min-width: 601px) {
-  td.fontchanger {
-    font-size: 80px;
-  }
+table.table-fit {
+    width: auto !important;
+    table-layout: auto !important;
 }
-
-@media screen and (max-width: 600px) {
-  td.fontchanger {
-    font-size: 30px;
-  }
+table.table-fit thead th, table.table-fit tfoot th {
+    width: auto !important;
+}
+table.table-fit tbody td, table.table-fit tfoot td {
+    width: auto !important;
 }
 
 * { box-sizing: border-box; }
