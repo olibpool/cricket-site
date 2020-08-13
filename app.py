@@ -189,11 +189,25 @@ def main_page():
         pngImageB64String = "data:image/png;base64,"
         pngImageB64String += base64.b64encode(output.getvalue()).decode('utf8')
 
+        c.close()
+
         return render_template("output.html", graph=pngImageB64String,
                                bowlmatchstats=bowlmatchstats, batmatchstats=batmatchstats, which=batorbowl,
                                batavg=round(cumulativebat[-1],2), bowlavg=round(cumulativebowl[-1],2))
     else:
-        return render_template('index.html')
+        conn = sqlite3.connect("stats.db")
+        c = conn.cursor()
+
+        c.execute("SELECT DISTINCT InningsPlayer FROM Test")
+
+        namesstart = c.fetchall()
+        names = []
+
+        for name in namesstart:
+            names.append(name[0])
+
+        c.close()
+        return render_template('index.html', names=names)
 
 @app.route('/rolling', methods=['GET', 'POST'])
 def rolling_page():
@@ -420,7 +434,19 @@ def rolling_page():
                                bowlmatchstats=bowlmatchstats, batmatchstats=batmatchstats, which=batorbowl,
                                batavg=round(cumulativebat[-1],2), bowlavg=round(cumulativebowl[-1],2), period=period)
     else:
-        return render_template('rolling.html')
+        conn = sqlite3.connect("stats.db")
+        c = conn.cursor()
+
+        c.execute("SELECT DISTINCT InningsPlayer FROM Test")
+
+        namesstart = c.fetchall()
+        names = []
+
+        for name in namesstart:
+            names.append(name[0])
+
+        c.close()
+        return render_template('rolling.html', names=names)
 
 
 if __name__ == '__main__':
