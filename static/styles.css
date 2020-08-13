@@ -1,0 +1,16 @@
+table {
+    table-layout:fixed;
+    font-size: xx-large;
+}
+
+@media screen and (min-width: 601px) {
+  td.fontchanger {
+    font-size: 80px;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  td.fontchanger {
+    font-size: 30px;
+  }
+}
