@@ -35,13 +35,6 @@ def main_page():
 
         # Check what the user wants to analyse:
         batorbowl = request.form.get("batorbowl")
-        if batorbowl == "Batting":
-            which = 'InningsBattedFlag=1'
-        elif batorbowl == "Bowling":
-            which = 'InningsBowledFlag=1'
-        else:
-            which = '(InningsBattedFlag=1 OR InningsBowledFlag=1)'
-
         TestorODI = request.form.get("TestorODI")
 
         # Connect to the stats database:
@@ -70,9 +63,8 @@ def main_page():
 
         # Get data from stats.db
         data = c.execute(
-            "SELECT DISTINCT * FROM " + quote_identifier(TestorODI).strip('\"') + " WHERE (" + quote_identifier(
-                which).strip(
-                '\"') + " AND InningsPlayer=" + quote_identifier(name).strip('\"') + ") ORDER BY InningsDate")
+            "SELECT DISTINCT * FROM " + quote_identifier(TestorODI).strip('\"') + " WHERE InningsPlayer="
+            + quote_identifier(name).strip('\"') + " ORDER BY InningsDate")
 
         # Initialising variables
         batmatchstats = [('Match Number', 'Match Date', 'Opposition', 'Ground', 'Runs Scored', 'Number of Dismissals')]
@@ -139,6 +131,7 @@ def main_page():
                 runs += int(rowdata[2])
                 if int(rowdata[5]) != 1:
                     outs += 1
+
             elif rowdata[19] == 1:
                 bowlruns += int(rowdata[21])
                 wickets += int(rowdata[22])
@@ -218,13 +211,6 @@ def rolling_page():
 
         # Check what the user wants to analyse:
         batorbowl = request.form.get("batorbowl")
-        if batorbowl == "Batting":
-            which = 'InningsBattedFlag=1'
-        elif batorbowl == "Bowling":
-            which = 'InningsBowledFlag=1'
-        else:
-            which = '(InningsBattedFlag=1 OR InningsBowledFlag=1)'
-
         TestorODI = request.form.get("TestorODI")
 
         period = request.form.get("period")
@@ -275,9 +261,8 @@ def rolling_page():
 
         # Get data from stats.db
         data = c.execute(
-            "SELECT DISTINCT * FROM " + quote_identifier(TestorODI).strip('\"') + " WHERE (" + quote_identifier(
-                which).strip(
-                '\"') + " AND InningsPlayer=" + quote_identifier(name).strip('\"') + ") ORDER BY InningsDate")
+            "SELECT DISTINCT * FROM " + quote_identifier(TestorODI).strip('\"') + " WHERE InningsPlayer="
+            + quote_identifier(name).strip('\"') + " ORDER BY InningsDate")
 
         # Initialising variables
         batmatchstats = [('Match Number', 'Match Date', 'Opposition', 'Ground', 'Runs Scored', 'Number of Dismissals')]
@@ -450,4 +435,4 @@ def rolling_page():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0")
+    app.run()
