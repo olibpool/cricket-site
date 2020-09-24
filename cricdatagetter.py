@@ -33,10 +33,7 @@ def match_data(matches, matchformat):
 
         m = Match(str(matchnum))
 
-        if matchformat == "Test":
-            inningsnum = 4
-        else:
-            inningsnum = 2
+        inningsnum = len(m.all_innings)
 
         date = m.date
         ground = m.town_name
