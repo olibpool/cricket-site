@@ -31,3 +31,23 @@ match_adder(1, page)
 
 page = pagegetter(2, year)
 match_adder(2, page)
+
+
+# Date checking code:
+"""
+dates = []
+for i in results:
+    text = i.get_text()
+    counter = 0
+    word  = ""
+    for index, letter in enumerate(text):
+        if letter == "\n":
+            counter += 1
+        if counter == 6 and letter != "\n":
+            if letter != " ":
+                word += str(letter)
+            else:
+                dates.append(word)
+                word = ""
+print(dates)
+"""
