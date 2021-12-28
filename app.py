@@ -186,7 +186,7 @@ def main_page():
 
         return render_template("output.html", graph=pngImageB64String,
                                bowlmatchstats=bowlmatchstats, batmatchstats=batmatchstats, which=batorbowl,
-                               batavg=round(cumulativebat[-1],2), bowlavg=round(cumulativebowl[-1],2))
+                               batavg=round(cumulativebat[-1], 2), bowlavg=round(cumulativebowl[-1], 2))
     else:
         conn = sqlite3.connect("stats.db")
         c = conn.cursor()
@@ -201,6 +201,7 @@ def main_page():
 
         c.close()
         return render_template('index.html', names=names)
+
 
 @app.route('/rolling', methods=['GET', 'POST'])
 def rolling_page():
@@ -237,8 +238,8 @@ def rolling_page():
             return redirect("/rolling")
 
         c.execute("SELECT DISTINCT COUNT(DISTINCT InningsDate) FROM " +
-                           quote_identifier(TestorODI).strip('\"') + " WHERE InningsPlayer="
-                           + quote_identifier(name).strip('\"'))
+                  quote_identifier(TestorODI).strip('\"') + " WHERE InningsPlayer="
+                  + quote_identifier(name).strip('\"'))
 
         numofgames = c.fetchone()[0]
 
@@ -418,7 +419,7 @@ def rolling_page():
 
         return render_template("outputrolling.html", graph=pngImageB64String,
                                bowlmatchstats=bowlmatchstats, batmatchstats=batmatchstats, which=batorbowl,
-                               batavg=round(cumulativebat[-1],2), bowlavg=round(cumulativebowl[-1],2), period=period)
+                               batavg=round(cumulativebat[-1], 2), bowlavg=round(cumulativebowl[-1], 2), period=period)
     else:
         conn = sqlite3.connect("stats.db")
         c = conn.cursor()
