@@ -61,111 +61,79 @@ def main_page():
 
         # Get data from stats.db
         data = c.execute(
-            "SELECT DISTINCT * FROM " + quote_identifier(TestorODI).strip('\"') + " WHERE InningsPlayer="
+            "SELECT * FROM " + quote_identifier(TestorODI).strip('\"') + " WHERE InningsPlayer="
             + quote_identifier(name).strip('\"') + " ORDER BY InningsDate")
 
         # Initialising variables
-        batmatchstats = [('Match Number', 'Match Date', 'Opposition', 'Ground', 'Runs Scored', 'Number of Dismissals')]
-        bowlmatchstats = [('Match Number', 'Match Date', 'Opposition', 'Ground', 'Runs Conceded', 'Wickets')]
+        batmatchstats = [('Innings Number', 'Match Date', 'Opposition', 'Ground', 'Runs Scored')]
+        bowlmatchstats = [('Innings Number', 'Match Date', 'Opposition', 'Ground', 'Runs Conceded', 'Wickets')]
         cumulativebat = []
         cumulativebowl = []
         graphmax = 0
-        match = 1
-        runs = 0
-        bowlruns = 0
-        outs = 0
-        wickets = 0
+        batins = 0
+        bowlins = 0
         totruns = 0
         totouts = 0
         totbowlruns = 0
         totwickets = 0
-        firstrow = True
-        lastrow = False
-        date = "blah"
-        opp = "blah"
-        ground = "blah"
 
         # Generate player data in list
         for rowdata in data:
-            if rowdata[13] != date or lastrow:
-                if not firstrow:
+            opp = rowdata[11]
+            ground = rowdata[12]
+            date = rowdata[13]
 
-                    totruns += runs
-                    totouts += outs
-                    totbowlruns += bowlruns
-                    totwickets += wickets
+            if rowdata[4] == 1:  # inningsbattedflag
+                batins += 1
 
-                    if totouts != 0:
-                        cumulativebat.append(totruns / totouts)
-                    else:
-                        cumulativebat.append(0)
-                    if totwickets != 0:
-                        cumulativebowl.append(totbowlruns / totwickets)
-                    else:
-                        cumulativebowl.append(0)
-                    if cumulativebat[match - 1] > graphmax:
-                        graphmax = cumulativebat[match - 1]
-                    if cumulativebowl[match - 1] > graphmax:
-                        graphmax = cumulativebowl[match - 1]
+                runs = rowdata[1]
+                totruns += int(rowdata[2])
 
-                    batmatchstats.append((match, date, opp, ground, runs, outs))
-                    bowlmatchstats.append((match, date, opp, ground, bowlruns, wickets))
+                if rowdata[5] == 0:
+                    totouts += 1
 
-                    match += 1
-                    runs = 0
-                    outs = 0
-                    bowlruns = 0
-                    wickets = 0
-
+                if totouts != 0:
+                    cumulativebat.append(totruns / totouts)
                 else:
-                    firstrow = False
+                    cumulativebat.append(0)
 
-                opp = rowdata[11]
-                ground = rowdata[12]
-                date = rowdata[13]
+                if cumulativebat[batins - 1] > graphmax:
+                    graphmax = cumulativebat[batins - 1]
 
-            if rowdata[4] == 1:
-                runs += int(rowdata[2])
-                if int(rowdata[5]) != 1:
-                    outs += 1
+                batmatchstats.append((batins, date, opp, ground, runs))
 
-            elif rowdata[19] == 1:
-                bowlruns += int(rowdata[21])
-                wickets += int(rowdata[22])
+            if rowdata[19] == 1:  # inningsbowledflag
+                bowlins += 1
+                bowlruns = int(rowdata[21])
+                totbowlruns += bowlruns
 
-        # Add last match to data:
-        totruns += runs
-        totouts += outs
-        totbowlruns += bowlruns
-        totwickets += wickets
+                wickets = int(rowdata[22])
+                totwickets += wickets
 
-        if totouts != 0:
-            cumulativebat.append(totruns / totouts)
-        else:
-            cumulativebat.append(0)
-        if totwickets != 0:
-            cumulativebowl.append(totbowlruns / totwickets)
-        else:
-            cumulativebowl.append(0)
-        if cumulativebat[match - 1] > graphmax:
-            graphmax = cumulativebat[match - 1]
-        if cumulativebowl[match - 1] > graphmax:
-            graphmax = cumulativebowl[match - 1]
+                if totwickets != 0:
+                    cumulativebowl.append(totbowlruns / totwickets)
+                else:
+                    cumulativebowl.append(0)
 
-        batmatchstats.append((match, date, opp, ground, runs, outs))
-        bowlmatchstats.append((match, date, opp, ground, bowlruns, wickets))
+                if cumulativebowl[bowlins - 1] > graphmax:
+                    graphmax = cumulativebowl[bowlins - 1]
+
+                bowlmatchstats.append((bowlins, date, opp, ground, bowlruns, wickets))
+
+        dates = [x[1] for x in batmatchstats + bowlmatchstats]
+        matches = len(set(dates)) - 1
 
         # Plotting the data
         plt.style.use('Solarize_Light2')
         fig = plt.figure()
         ax = fig.add_subplot()
         if batorbowl in ["Batting", "Both"]:
-            ax.plot(range(1, match + 1), cumulativebat, label="Batting average")
+            ax.plot(range(1, batins + 1), cumulativebat, label="Batting average")
         if batorbowl in ["Bowling", "Both"]:
-            ax.plot(range(1, match + 1), cumulativebowl, label="Bowling average")
-        ax.set_xlim(1, match + 0.5)
+            ax.plot(range(1, bowlins + 1), cumulativebowl, label="Bowling average")
+        ax.set_xlim(1, max(batins, bowlins) + 0.5)
         ax.set_ylim(0, graphmax + 5)
-        ax.set_xlabel('Number of matches')
+        ax.set_xlabel('Number of innings')
         ax.set_ylabel('Average')
         ax.set_title(str(TestorODI) + ' averages for ' + str(name))
         ax.legend()
@@ -183,7 +151,8 @@ def main_page():
 
         return render_template("output.html", graph=pngImageB64String,
                                bowlmatchstats=bowlmatchstats, batmatchstats=batmatchstats, which=batorbowl,
-                               batavg=round(cumulativebat[-1], 2), bowlavg=round(cumulativebowl[-1], 2))
+                               batavg=round(cumulativebat[-1], 3), bowlavg=round(cumulativebowl[-1], 3),
+                               matches=matches)
     else:
         conn = sqlite3.connect("stats.db")
         c = conn.cursor()
@@ -264,8 +233,8 @@ def rolling_page():
             + quote_identifier(name).strip('\"') + " ORDER BY InningsDate")
 
         # Initialising variables
-        batmatchstats = [('Match Number', 'Match Date', 'Opposition', 'Ground', 'Runs Scored', 'Number of Dismissals')]
-        bowlmatchstats = [('Match Number', 'Match Date', 'Opposition', 'Ground', 'Runs Conceded', 'Wickets')]
+        batmatchstats = [('Innings Number', 'Match Date', 'Opposition', 'Ground', 'Runs Scored', 'Not Out')]
+        bowlmatchstats = [('Innings Number', 'Match Date', 'Opposition', 'Ground', 'Runs Conceded', 'Wickets')]
         cumulativebat = []
         cumulativebowl = []
         rollingbat = []
@@ -273,120 +242,99 @@ def rolling_page():
         graphmax = 0
         rollgraphmax = 0
         match = 1
-        runs = 0
-        bowlruns = 0
-        outs = 0
-        wickets = 0
         totruns = 0
         totouts = 0
         totbowlruns = 0
         totwickets = 0
-        firstrow = True
-        lastrow = False
-        date = "blah"
-        opp = "blah"
-        ground = "blah"
-        i = 0
+        batins = 0
+        bowlins = 0
 
         # Generate player data in list
         for rowdata in data:
-            if rowdata[13] != date or lastrow:
-                if not firstrow:
+            opp = rowdata[11]
+            ground = rowdata[12]
+            date = rowdata[13]
 
-                    totruns += runs
-                    totouts += outs
-                    totbowlruns += bowlruns
-                    totwickets += wickets
+            if rowdata[4] == 1:  # inningsbattedflag
+                batins += 1
 
-                    if totouts != 0:
-                        cumulativebat.append(totruns / totouts)
+                runs = rowdata[1]
+                totruns += int(rowdata[2])
+
+                if rowdata[5] == 0:
+                    totouts += 1
+                    out = 1
+                else:
+                    out = 0
+
+                if totouts != 0:
+                    cumulativebat.append(totruns / totouts)
+                else:
+                    cumulativebat.append(0)
+
+                if cumulativebat[batins - 1] > graphmax:
+                    graphmax = cumulativebat[batins - 1]
+
+                batmatchstats.append((batins, date, opp, ground, runs, out))
+
+            if rowdata[19] == 1:  # inningsbowledflag
+                bowlins += 1
+                bowlruns = int(rowdata[21])
+                totbowlruns += bowlruns
+
+                wickets = int(rowdata[22])
+                totwickets += wickets
+
+                if totwickets != 0:
+                    cumulativebowl.append(totbowlruns / totwickets)
+                else:
+                    cumulativebowl.append(0)
+
+                if cumulativebowl[bowlins - 1] > graphmax:
+                    graphmax = cumulativebowl[bowlins - 1]
+
+                bowlmatchstats.append((bowlins, date, opp, ground, bowlruns, wickets))
+
+        dates = [x[1] for x in batmatchstats + bowlmatchstats]
+        matches = len(set(dates)) - 1
+
+        if batorbowl in ['Batting', 'Both']:
+            for i in range(1, batins + 1):
+                if i > period:
+                    rollruns = 0
+                    rollouts = 0
+
+                    for j in range(i - period, i):
+                        rollruns += int(batmatchstats[j][4].split("*")[0])
+                        rollouts += int(batmatchstats[j][5])
+
+                    # Creating rolling batting average
+                    if rollouts != 0:
+                        rollingbat.append(rollruns / rollouts)
                     else:
-                        cumulativebat.append(0)
-                    if totwickets != 0:
-                        cumulativebowl.append(totbowlruns / totwickets)
-                    else:
-                        cumulativebowl.append(0)
-                    if cumulativebat[match - 1] > graphmax:
-                        graphmax = cumulativebat[match - 1]
-                    if cumulativebowl[match - 1] > graphmax:
-                        graphmax = cumulativebowl[match - 1]
+                        rollingbat.append(0)
 
-                    batmatchstats.append((match, date, opp, ground, runs, outs))
-                    bowlmatchstats.append((match, date, opp, ground, bowlruns, wickets))
-
-                    match += 1
-                    runs = 0
-                    outs = 0
-                    bowlruns = 0
-                    wickets = 0
-
-                else:
-                    firstrow = False
-
-                opp = rowdata[11]
-                ground = rowdata[12]
-                date = rowdata[13]
-
-            if rowdata[4] == 1:
-                runs += int(rowdata[2])
-                if int(rowdata[5]) != 1:
-                    outs += 1
-            elif rowdata[19] == 1:
-                bowlruns += int(rowdata[21])
-                wickets += int(rowdata[22])
-
-        # Add last match to data:
-        totruns += runs
-        totouts += outs
-        totbowlruns += bowlruns
-        totwickets += wickets
-
-        if totouts != 0:
-            cumulativebat.append(totruns / totouts)
-        else:
-            cumulativebat.append(0)
-        if totwickets != 0:
-            cumulativebowl.append(totbowlruns / totwickets)
-        else:
-            cumulativebowl.append(0)
-        if cumulativebat[match - 1] > graphmax:
-            graphmax = cumulativebat[match - 1]
-        if cumulativebowl[match - 1] > graphmax:
-            graphmax = cumulativebowl[match - 1]
-
-        batmatchstats.append((match, date, opp, ground, runs, outs))
-        bowlmatchstats.append((match, date, opp, ground, bowlruns, wickets))
-
-        for i in range(1, len(batmatchstats) + 1):
-            if i > period:
-                rollruns = 0
-                rollouts = 0
-                rollbowlruns = 0
-                rollwickets = 0
-
-                for j in range(i - period, i):
-                    rollruns += int(batmatchstats[j][4])
-                    rollouts += int(batmatchstats[j][5])
-                    rollbowlruns += int(bowlmatchstats[j][4])
-                    rollwickets += int(bowlmatchstats[j][5])
-
-                # Creating rolling batting average
-                if rollouts != 0:
-                    rollingbat.append(rollruns / rollouts)
-                else:
-                    rollingbat.append(0)
-
-                # Creating rolling bowling average
-                if rollwickets != 0:
-                    rollingbowl.append(rollbowlruns / rollwickets)
-                else:
-                    rollingbowl.append(0)
-
-                # Sort out graph range
-                if batorbowl in ['Batting', 'Both']:
+                    # Sort out graph range
                     if rollingbat[-1] > rollgraphmax:
                         rollgraphmax = rollingbat[-1]
-                if batorbowl in ['Bowling', 'Both']:
+
+        if batorbowl in ['Bowling', 'Both']:
+            for i in range(1, bowlins + 1):
+                if i > period:
+                    rollbowlruns = 0
+                    rollwickets = 0
+
+                    for j in range(i - period, i):
+                        rollbowlruns += int(bowlmatchstats[j][4])
+                        rollwickets += int(bowlmatchstats[j][5])
+
+                    # Creating rolling bowling average
+                    if rollwickets != 0:
+                        rollingbowl.append(rollbowlruns / rollwickets)
+                    else:
+                        rollingbowl.append(0)
+
+                    # Sort out graph range
                     if rollingbowl[-1] > rollgraphmax:
                         rollgraphmax = rollingbowl[-1]
 
@@ -395,12 +343,12 @@ def rolling_page():
         fig = plt.figure()
         ax = fig.add_subplot()
         if batorbowl in ["Batting", "Both"]:
-            ax.plot(range(period, match + 1), rollingbat, label="Batting average")
+            ax.plot(range(period, batins), rollingbat, label="Batting average")
         if batorbowl in ["Bowling", "Both"]:
-            ax.plot(range(period, match + 1), rollingbowl, label="Bowling average")
-        ax.set_xlim(period, match + 0.5)
+            ax.plot(range(period, bowlins), rollingbowl, label="Bowling average")
+        ax.set_xlim(period, max(batins, bowlins) + 0.5)
         ax.set_ylim(0, rollgraphmax + 5)
-        ax.set_xlabel('Number of matches')
+        ax.set_xlabel('Number of innings')
         ax.set_ylabel('Average')
         ax.set_title("Rolling " + str(TestorODI) + ' averages for ' + str(name) + " period: " + str(period))
         ax.legend()
@@ -416,7 +364,8 @@ def rolling_page():
 
         return render_template("outputrolling.html", graph=pngImageB64String,
                                bowlmatchstats=bowlmatchstats, batmatchstats=batmatchstats, which=batorbowl,
-                               batavg=round(cumulativebat[-1], 2), bowlavg=round(cumulativebowl[-1], 2), period=period)
+                               batavg=round(cumulativebat[-1], 3), bowlavg=round(cumulativebowl[-1], 3), period=period,
+                               matches=matches)
     else:
         conn = sqlite3.connect("stats.db")
         c = conn.cursor()

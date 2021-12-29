@@ -16,7 +16,7 @@
                 <h3 style="font-weight: bold">Quick Stats:</h3>
             </div>
             <div class="col">
-                <h5>Matches played: {{ batmatchstats[-1][0] }}</h5>
+                <h5>Matches played: {{ matches }}</h5>
             </div>
             {% if which in ['Batting', 'Both'] %}
                 <div class="col">
@@ -55,33 +55,78 @@
         }
     </style>
 
+    {% if which != 'Both' %}
     <table class="table table-hover table-sm mt-2">
         <tr class="textchange">
-            <th>Match</th>
+            <th>Innings</th>
             <th>Date</th>
-            <th>Opposition</th>
+            <th>Versus</th>
             <th>Ground</th>
-            {% if which in ['Batting', 'Both'] %}
+            {% if which in ['Batting'] %}
                 <th>Runs Scored</th>
             {% endif %}
-            {% if which in ['Bowling', 'Both'] %}
+            {% if which in ['Bowling'] %}
                 <th>Bowling Figs (w/r)</th>
             {% endif %}
         </tr>
-        {% for i in range(1, batmatchstats|length) %}
-        <tr class="textchange">
-            <td>{{ batmatchstats[i][0] }}</td>
-            <td>{{ batmatchstats[i][1] }}</td>
-            <td>{{ batmatchstats[i][2] }}</td>
-            <td>{{ batmatchstats[i][3] }}</td>
-            {% if which in ['Batting', 'Both'] %}
+        {% if which == 'Batting' %}
+            {% for i in range(1, batmatchstats|length) %}
+            <tr class="textchange">
+                <td>{{ batmatchstats[i][0] }}</td>
+                <td>{{ batmatchstats[i][1] }}</td>
+                <td>{{ batmatchstats[i][2] }}</td>
+                <td>{{ batmatchstats[i][3] }}</td>
                 <td>{{ batmatchstats[i][4] }}</td>
-            {%  endif %}
-            {% if which in ['Bowling', 'Both'] %}
+            {% endfor %}
+
+        {% elif which == 'Bowling'  %}
+            {% for i in range(1, bowlmatchstats|length) %}
+            <tr class="textchange">
+                <td>{{ bowlmatchstats[i][0] }}</td>
+                <td>{{ bowlmatchstats[i][1] }}</td>
+                <td>{{ bowlmatchstats[i][2] }}</td>
+                <td>{{ bowlmatchstats[i][3] }}</td>
                 <td>{{ bowlmatchstats[i][5] }} / {{ bowlmatchstats[i][4] }}</td>
+            {% endfor %}
+        {% endif %}
+    </table>
+    {% else %}
+    {% for format in ['Batting', 'Bowling'] %}
+
+        <table class="table table-hover table-sm mt-2">
+        <tr class="textchange">
+            <th>{{ format }} Innings</th>
+            <th>Date</th>
+            <th>Versus</th>
+            <th>Ground</th>
+            {% if format in ['Batting'] %}
+                <th>Runs Scored</th>
+            {% elif format in ['Bowling'] %}
+                <th>Bowling Figs (w/r)</th>
             {% endif %}
         </tr>
-        {% endfor %}
+        {% if format == 'Batting' %}
+            {% for i in range(1, batmatchstats|length) %}
+            <tr class="textchange">
+                <td>{{ batmatchstats[i][0] }}</td>
+                <td>{{ batmatchstats[i][1] }}</td>
+                <td>{{ batmatchstats[i][2] }}</td>
+                <td>{{ batmatchstats[i][3] }}</td>
+                <td>{{ batmatchstats[i][4] }}</td>
+            {% endfor %}
+
+        {% elif format == 'Bowling'  %}
+            {% for i in range(1, bowlmatchstats|length) %}
+            <tr class="textchange">
+                <td>{{ bowlmatchstats[i][0] }}</td>
+                <td>{{ bowlmatchstats[i][1] }}</td>
+                <td>{{ bowlmatchstats[i][2] }}</td>
+                <td>{{ bowlmatchstats[i][3] }}</td>
+                <td>{{ bowlmatchstats[i][5] }} / {{ bowlmatchstats[i][4] }}</td>
+            {% endfor %}
+        {% endif %}
     </table>
+    {% endfor %}
+    {% endif %}
 
 {%  endblock %}

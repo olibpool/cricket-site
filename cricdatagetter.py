@@ -7,7 +7,7 @@ from time import sleep
 
 # TODO Add comments
 
-# TODO add test num 62405, 62390 manually
+# TODO add odi num 64473, 66013 manually
 # test 1104483 appears to have been deleted?
 
 db = sqlite3.connect("stats.db")
@@ -52,7 +52,7 @@ def stats(matchnum):
                     stat = stat.replace("†", "")
                     batstats[counter][batternum].append(stat)
                 elif i == 1:
-                    if stat.text == 'not out ':
+                    if 'not out' in stat.text:
                         batstats[counter][batternum].append("1")  # 1 for not out
                     else:
                         batstats[counter][batternum].append("0")
