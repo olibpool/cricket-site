@@ -53,13 +53,11 @@ def main_page():
             msg = "Make sure to put in a player's name before clicking analyse!\n"
         else:
             msg = "There is no player in the database called " + str(name) + \
-                  ".\nMake sure you use the standard format for scorecards (e.g BA Stokes)."
+                  ".\nMake sure you use the standard format for scorecards (e.g 'Joe Root')."
 
         if check is None:
             flash(msg)
             return redirect("/")
-
-        last = check[0]
 
         # Get data from stats.db
         data = c.execute(
@@ -86,7 +84,6 @@ def main_page():
         date = "blah"
         opp = "blah"
         ground = "blah"
-        i = 0
 
         # Generate player data in list
         for rowdata in data:
