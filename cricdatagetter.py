@@ -52,7 +52,7 @@ def stats(matchnum):
                     stat = stat.replace("†", "")
                     batstats[counter][batternum].append(stat)
                 elif i == 1:
-                    if stat.text == 'not out':
+                    if stat.text == 'not out ':
                         batstats[counter][batternum].append("1")  # 1 for not out
                     else:
                         batstats[counter][batternum].append("0")
