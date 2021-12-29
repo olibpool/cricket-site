@@ -7,15 +7,11 @@ from time import sleep
 
 # TODO Add comments
 
+# TODO add test num 62405, 62390 manually
+# test 1104483 appears to have been deleted?
+
 db = sqlite3.connect("stats.db")
 c: Cursor = db.cursor()
-
-countries = {'ENG': "v England", 'IND': "v India", 'AUS': "v Australia", 'PAK': "v Pakistan", 'WI': "v West Indies",
-             'SRI': "v Sri Lanka", 'AFG': "v Afghanistan", 'IRE': "v Ireland", 'RSA': "v South Africa", 'ZIM':
-                 "v Zimbabwe", 'BAN': "Bangladesh", 'NZ': "v New Zealand", 'NED': "v Netherlands", 'UAE':
-                 "v United Arab Emirates", 'USA': "v United States", 'NPL': "v Nepal", 'OMN': "v Oman",
-             'NAM': "v Namibia",
-             'PNG': "v Papua New Guinea"}
 
 months = {"Jan": '01', "Feb": '02', "Mar": '03', "Apr": '04', "May": '05', "Jun": '06', "Jul": '07', "Aug": '08',
           "Sep": '09', "Oct": '10', "Nov": '11', "Dec": '12'}
@@ -30,6 +26,7 @@ def stats(matchnum):
 
     soup = BeautifulSoup(page.content, 'html.parser')
 
+    # these tables contain stats for each bowler and batsmen
     battingtables = soup.find_all("table", class_="table batsman")
     bowlingtables = soup.find_all("table", class_="table bowler")
 
@@ -41,7 +38,6 @@ def stats(matchnum):
         counter += 1
 
         body = t.find("tbody")
-
         rows = body.find_all("tr")
 
         batternum = -1
@@ -56,7 +52,7 @@ def stats(matchnum):
                     stat = stat.replace("†", "")
                     batstats[counter][batternum].append(stat)
                 elif i == 1:
-                    if stat == 'not out':
+                    if stat.text == 'not out':
                         batstats[counter][batternum].append("1")  # 1 for not out
                     else:
                         batstats[counter][batternum].append("0")
@@ -91,18 +87,30 @@ def stats(matchnum):
 
     description = soup.find("div", class_="description").text
 
-    town = description.split(",")[1][1:]
-    date = description.split(",")[2]
+    if len(description.split(",")) >= 4:  # needed as some early data is formatted differently
+        town = description.split(",")[1][1:]
+        date = description.split(",")[2]
+    else:
+        town = description.split(",")[0]
+        date = description.split(",")[1]
     date = date.split(" ")
 
-    if len(date[2]) < 2:
-        date[2] = '0' + date[2]
+    if len(date) <= 8:  # for test across years and months
 
-    datenum = date[-1] + "-" + months[date[1]] + "-" + date[2]
+        if len(date[2]) < 2:
+            date[2] = '0' + date[2]
+
+        datenum = date[-1] + "-" + months[date[1]] + "-" + date[2]
+    else:
+        datenum = date[3] + "-" + months[date[1]] + "-" + date[2]
 
     teams = soup.find_all("div", class_="section-header border-bottom text-danger cursor-pointer")
 
-    teamsarray = [team.text.split(" ")[0] for team in teams]
+    teamsarray = []
+    for team in teams:
+        team = team.text.split("1")[0]
+        team = team.split("2")[0]
+        teamsarray.append(team[:-1])
 
     return {"innings": [batstats, bowlstats], "date": datenum, "teams": list(set(teamsarray)),
             "batting_team": teamsarray, "town": town}
@@ -118,7 +126,9 @@ def matchnum_getter(matchformat):
     with open("addedmatches" + matchformat + ".txt", "r") as f:
         for row in f:
             if row not in compmatches:
+                # only select matches that haven't yet been put in the database
                 matches.append(row[:-1])
+
     return matches
 
 
@@ -128,8 +138,6 @@ def match_data(matches, matchformat):
         print()
 
         m = stats(matchnum)
-
-        inningsnum = len(m["innings"][0])
 
         batting_team = m['batting_team']
 
@@ -148,7 +156,7 @@ def match_data(matches, matchformat):
                 opp = m['teams'][0]
 
             for row in innings:
-                if row[2] != "-": # checks for absences
+                if row[2] != "-":  # checks for absences
                     # batting
                     # row [name, not out flag, runs, faced, mins, 4s, 6s, strike rate]
 
@@ -165,27 +173,36 @@ def match_data(matches, matchformat):
                     if runs < 50:
                         row50 = 0
                         row100 = 0
+                        buck = "0-49"
                     elif 50 <= runs < 100:
                         row50 = 1
                         row100 = 0
+                        buck = "50-99"
+                    elif 100 <= runs < 150:
+                        row50 = 0
+                        row100 = 1
+                        buck = "100-149"
+                    elif 150 <= runs < 200:
+                        row50 = 0
+                        row100 = 1
+                        buck = "150-199"
                     else:
                         row50 = 0
                         row100 = 1
+                        buck = "200+"
 
                     if notout:
                         runs = str(runs) + "*"
 
-
                     query = "INSERT INTO {} (InningsPlayer, InningsRunsScored, InningsRunsScoredNum," \
                             " InningsMinutesBatted, InningsBattedFlag, InningsNotOutFlag, InningsBallsFaced, " \
                             "InningsBoundaryFours, InningsBoundarySixes, InningsBattingStrikeRate, InningsNumber," \
-                            " Opposition, Ground, InningsDate, Country, '50s', '100s')" \
-                            " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)".format(matchformat)
+                            " Opposition, Ground, InningsDate, Country, '50s', '100s', 'InningsRunsScoredBuckets')" \
+                            " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, ?)".format(matchformat)
 
                     c.execute(query,
                               [name, runs, runsnum, mins, 1, notout, faced, fours,
-                               sixes, sr, i + 1, opp, ground, date, country, row50, row100])
-
+                               sixes, sr, i + 1, opp, ground, date, country, row50, row100, buck])
 
         for i, innings in enumerate(m['innings'][1]):
             opp = batting_team[i]
@@ -210,7 +227,7 @@ def match_data(matches, matchformat):
                     wick5 = 0
                     wick10 = 0
                     buck = "0-4"
-                elif 5 < wickets < 10:
+                elif 5 <= wickets < 10:
                     wick4 = 0
                     wick5 = 1
                     wick10 = 0
@@ -221,21 +238,22 @@ def match_data(matches, matchformat):
                     wick10 = 1
                     buck = "5+"
 
-
                 query = "INSERT INTO {} (InningsPlayer,InningsNumber,Opposition, Ground, InningsDate, Country," \
                         " InningsOversBowled, InningsBowledFlag, InningsMaidensBowled, " \
                         "InningsRunsConceded, InningsWicketsTaken, '4Wickets', '5Wickets', '10Wickets'," \
                         " InningsWicketsTakenBuckets, InningsEconomyRate)" \
                         " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)".format(matchformat)
-    
+
                 c.execute(query, [name, i + 1, opp, ground, date, country, overs, 1, maidens, conceded, wickets,
                                   wick4, wick5, wick10, buck, eco])
 
         with open("completedmatches" + str(matchformat) + ".txt", "a") as f:
             print(matchnum, file=f)
 
+        db.commit()
+
         print("Finished adding match number: " + matchnum)
-        sleeptime = random.uniform(1,3)
+        sleeptime = random.uniform(1, 3)  # as to not overload requests and get banned
         print("Sleeping " + str(sleeptime) + " now")
         print("=========================================")
         sleep(sleeptime)
@@ -245,7 +263,5 @@ matches = matchnum_getter("Test")
 match_data(matches, "Test")
 matches = matchnum_getter("ODI")
 match_data(matches, "ODI")
-
-db.commit()
 
 db.close()

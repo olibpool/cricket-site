@@ -1,3 +1,6 @@
+import random
+from time import sleep
+
 from bs4 import BeautifulSoup
 import requests
 import datetime
@@ -6,9 +9,11 @@ import re
 year = str(datetime.datetime.now().year)
 formats = ["Test", "ODI"]
 
+
 def pagegetter(format, year):
     return requests.get("https://stats.espncricinfo.com/ci/engine/records/team/match_results.html?class=" +
-                        str(format) + ";id=" + year + ";type=year")
+                        str(format) + ";id=" + str(year) + ";type=year")
+
 
 def match_adder(format, page):
     soup = BeautifulSoup(page.content, 'html.parser')
@@ -31,16 +36,16 @@ def match_adder(format, page):
         for m in matches_to_add:
             if m not in pure_matches and "espncricinfo" not in m:
                 f.write(m + "\n")
-
     return
 
 
-page = pagegetter(1, year)
-match_adder(1, page)
+for year in range(1877, 2022):  # to create list of all matches
+    page = pagegetter(1, year)
+    match_adder(1, page)
 
-page = pagegetter(2, year)
-match_adder(2, page)
-
+    page = pagegetter(2, year)
+    match_adder(2, page)
+    sleep(random.uniform(1, 3))
 
 # Date checking code:
 """
