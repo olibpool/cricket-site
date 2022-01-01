@@ -147,6 +147,12 @@ def main_page():
         pngImageB64String = "data:image/png;base64,"
         pngImageB64String += base64.b64encode(output.getvalue()).decode('utf8')
 
+        # To keep functionality if only chosing batting or bowling.
+        if not cumulativebat:
+            cumulativebat = [0]
+        if not cumulativebowl:
+            cumulativebowl = [0]
+
         c.close()
 
         return render_template("output.html", graph=pngImageB64String,
@@ -361,6 +367,12 @@ def rolling_page():
         # Encode PNG image to base64 string
         pngImageB64String = "data:image/png;base64,"
         pngImageB64String += base64.b64encode(output.getvalue()).decode('utf8')
+
+        # To keep functionality if only chosing batting or bowling.
+        if cumulativebat == []:
+            cumulativebat = [0]
+        if cumulativebowl == []:
+            cumulativebowl = [0]
 
         return render_template("outputrolling.html", graph=pngImageB64String,
                                bowlmatchstats=bowlmatchstats, batmatchstats=batmatchstats, which=batorbowl,
