@@ -3,6 +3,7 @@ import codecs
 import io
 import sqlite3
 import matplotlib.pyplot as plt
+import pandas
 from flask import Flask, request, render_template, flash, redirect
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
