@@ -1,7 +1,13 @@
 import codecs
 import json
+import os
 import sqlite3
 from flask import Flask, request, render_template, flash, redirect
+
+app: Flask = Flask(__name__)
+app.config['SECRET_KEY'] = 'p2fAJzrORrIWVyRE3kI0eA'
+
+path_to_dir = os.path.dirname(__file__)
 
 
 def quote_identifier(s, errors="strict"):
@@ -19,10 +25,6 @@ def quote_identifier(s, errors="strict"):
     return "\"" + encodable.replace("\"", "\"\"") + "\""
 
 
-app: Flask = Flask(__name__)
-app.config['SECRET_KEY'] = 'p2fAJzrORrIWVyRE3kI0eA'
-
-
 @app.route('/', methods=['GET', 'POST'])
 def main_page():
     if request.method == 'POST':
@@ -35,7 +37,7 @@ def main_page():
         TestorODI = request.form.get("TestorODI")
 
         # Connect to the stats database:
-        conn = sqlite3.connect("stats.db")
+        conn = sqlite3.connect(path_to_dir + "stats.db")
         c = conn.cursor()
 
         # Get last matchdate:
@@ -122,8 +124,10 @@ def main_page():
 
         if batorbowl == 'both':
             dataSets = ['Batting', 'Bowling']
+            graphTitle = 'Batting and Bowling'
         else:
             dataSets = [batorbowl]
+            graphTitle = batorbowl
 
         graphJSON = json.dumps(
             {
@@ -146,7 +150,7 @@ def main_page():
                 ,
                 "layout":
                     {
-                        "title": str(TestorODI) + ' averages for ' + str(name),
+                        "title": str(TestorODI) + " " + graphTitle + ' averages for ' + str(name),
                         "xaxis": {
                             'title': "Innings Number",
                             'rangemode': 'tozero'
@@ -183,7 +187,7 @@ def main_page():
                                batavg=round(cumulativebat[-1], 3), bowlavg=round(cumulativebowl[-1], 3),
                                matches=matches, graphJSON=graphJSON)
     else:
-        conn = sqlite3.connect("stats.db")
+        conn = sqlite3.connect(path_to_dir + "stats.db")
         c = conn.cursor()
 
         c.execute("SELECT DISTINCT InningsPlayer FROM Test")
@@ -212,7 +216,7 @@ def rolling_page():
         period = request.form.get("period")
 
         # Connect to the stats database:
-        conn = sqlite3.connect("stats.db")
+        conn = sqlite3.connect(path_to_dir + "stats.db")
         c = conn.cursor()
 
         # Get last matchdate:
@@ -270,7 +274,6 @@ def rolling_page():
         rollingbowl = []
         graphmax = 0
         rollgraphmax = 0
-        match = 1
         totruns = 0
         totouts = 0
         totbowlruns = 0
@@ -369,8 +372,10 @@ def rolling_page():
 
         if batorbowl == 'both':
             dataSets = ['Batting', 'Bowling']
+            graphTitle = 'Batting and Bowling'
         else:
             dataSets = [batorbowl]
+            graphTitle = batorbowl
 
         graphJSON = json.dumps(
             {
@@ -393,7 +398,7 @@ def rolling_page():
                 ,
                 "layout":
                     {
-                        "title": "Rolling" + str(TestorODI) + ' averages for ' + str(name) +
+                        "title": "Rolling " + str(TestorODI) + " " + graphTitle + ' averages for ' + str(name) +
                                  ", period: " + str(period),
                         "xaxis": {
                             'title': "Innings Number",
@@ -428,7 +433,7 @@ def rolling_page():
                                batavg=round(cumulativebat[-1], 3), bowlavg=round(cumulativebowl[-1], 3), period=period,
                                matches=matches, graphJSON=graphJSON)
     else:
-        conn = sqlite3.connect("stats.db")
+        conn = sqlite3.connect(path_to_dir + "stats.db")
         c = conn.cursor()
 
         c.execute("SELECT DISTINCT InningsPlayer FROM Test")
