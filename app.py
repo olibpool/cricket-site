@@ -37,7 +37,7 @@ def main_page():
         TestorODI = request.form.get("TestorODI")
 
         # Connect to the stats database:
-        conn = sqlite3.connect(path_to_dir + "stats.db")
+        conn = sqlite3.connect("stats.db")
         c = conn.cursor()
 
         # Get last matchdate:
@@ -95,9 +95,6 @@ def main_page():
                 else:
                     cumulativebat.append(0)
 
-                if cumulativebat[batins - 1] > graphmax:
-                    graphmax = cumulativebat[batins - 1]
-
                 batmatchstats.append((batins, date, opp, ground, runs))
 
             if rowdata[19] == 1:  # inningsbowledflag
@@ -112,9 +109,6 @@ def main_page():
                     cumulativebowl.append(totbowlruns / totwickets)
                 else:
                     cumulativebowl.append(0)
-
-                if cumulativebowl[bowlins - 1] > graphmax:
-                    graphmax = cumulativebowl[bowlins - 1]
 
                 bowlmatchstats.append((bowlins, date, opp, ground, bowlruns, wickets))
 
@@ -186,7 +180,7 @@ def main_page():
                                batavg=round(cumulativebat[-1], 3), bowlavg=round(cumulativebowl[-1], 3),
                                matches=matches, graphJSON=graphJSON)
     else:
-        conn = sqlite3.connect(path_to_dir + "stats.db")
+        conn = sqlite3.connect("stats.db")
         c = conn.cursor()
 
         c.execute("SELECT DISTINCT InningsPlayer FROM Test")
@@ -215,7 +209,7 @@ def rolling_page():
         period = request.form.get("period")
 
         # Connect to the stats database:
-        conn = sqlite3.connect(path_to_dir + "stats.db")
+        conn = sqlite3.connect("stats.db")
         c = conn.cursor()
 
         # Get last matchdate:
@@ -229,7 +223,7 @@ def rolling_page():
         if nametest == '':
             msg = "Make sure to put in a player's name before clicking analyse!\n"
         else:
-            msg = "There is no player in the database called " + str(name) + \
+            msg = "There is no player in the " + str(TestorODI) + " database called " + str(name) + \
                   ".\nMake sure you use the standard format for scorecards (e.g BA Stokes)."
         if check is None:
             flash(msg)
@@ -303,9 +297,6 @@ def rolling_page():
                 else:
                     cumulativebat.append(0)
 
-                if cumulativebat[batins - 1] > graphmax:
-                    graphmax = cumulativebat[batins - 1]
-
                 batmatchstats.append((batins, date, opp, ground, runs, out))
 
             if rowdata[19] == 1:  # inningsbowledflag
@@ -320,9 +311,6 @@ def rolling_page():
                     cumulativebowl.append(totbowlruns / totwickets)
                 else:
                     cumulativebowl.append(0)
-
-                if cumulativebowl[bowlins - 1] > graphmax:
-                    graphmax = cumulativebowl[bowlins - 1]
 
                 bowlmatchstats.append((bowlins, date, opp, ground, bowlruns, wickets))
 
@@ -345,10 +333,6 @@ def rolling_page():
                     else:
                         rollingbat.append(0)
 
-                    # Sort out graph range
-                    if rollingbat[-1] > rollgraphmax:
-                        rollgraphmax = rollingbat[-1]
-
         if batorbowl in ['Bowling', 'Both']:
             for i in range(1, bowlins + 1):
                 if i > period:
@@ -364,10 +348,6 @@ def rolling_page():
                         rollingbowl.append(rollbowlruns / rollwickets)
                     else:
                         rollingbowl.append(0)
-
-                    # Sort out graph range
-                    if rollingbowl[-1] > rollgraphmax:
-                        rollgraphmax = rollingbowl[-1]
 
         if batorbowl == 'both':
             dataSets = ['Batting', 'Bowling']
@@ -407,6 +387,7 @@ def rolling_page():
                             'title': "Rolling Averages",
                             'rangemode': 'tozero'
                         },
+                        'showlegend': False,
                         "colorway": ["#06d6a0", "#ef476f"],
                         "plot_bgcolor": "#e4e1c9",
                         "paper_bgcolor": "#fefae0"
@@ -432,10 +413,10 @@ def rolling_page():
                                batavg=round(cumulativebat[-1], 3), bowlavg=round(cumulativebowl[-1], 3), period=period,
                                matches=matches, graphJSON=graphJSON)
     else:
-        conn = sqlite3.connect(path_to_dir + "stats.db")
+        conn = sqlite3.connect("stats.db")
         c = conn.cursor()
 
-        c.execute("SELECT DISTINCT InningsPlayer FROM Test")
+        c.execute("SELECT InningsPlayer FROM Test UNION SELECT InningsPlayer FROM ODI;")
 
         namesstart = c.fetchall()
         names = []
