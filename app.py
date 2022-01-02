@@ -1,14 +1,7 @@
-import base64
 import codecs
-import io
 import json
 import sqlite3
-import matplotlib.pyplot as plt
-import pandas
-import plotly
-import plotly.express as px
 from flask import Flask, request, render_template, flash, redirect
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
 
 def quote_identifier(s, errors="strict"):
