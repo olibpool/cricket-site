@@ -9,7 +9,14 @@
 {% endblock %}
 
 {% block bodytext %}
-    <img class="img-fluid" alt="Graph of average(s)" src="{{ graph }}"/>
+    <div class="container-fluid width: 100%">
+        <div class="row align-items-center mt-5">
+            <div class="col d-flex justify-content-center" >
+                <div id="chart" class="chart"></div>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <div class="row align-items-center mt-5">
             <div class="col-sm-5">
@@ -128,5 +135,12 @@
     </table>
     {% endfor %}
     {% endif %}
+
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script type="text/javascript">
+        var graphs = {{graphJSON | safe}};
+        var config = {responsive: true};
+        Plotly.newPlot('chart',graphs,config);
+    </script>
 
 {% endblock %}

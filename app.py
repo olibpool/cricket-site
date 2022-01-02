@@ -1,9 +1,12 @@
 import base64
 import codecs
 import io
+import json
 import sqlite3
 import matplotlib.pyplot as plt
 import pandas
+import plotly
+import plotly.express as px
 from flask import Flask, request, render_template, flash, redirect
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
@@ -140,6 +143,25 @@ def main_page():
         ax.legend()
         ax.grid(alpha=100)
 
+        if batorbowl == "Batting":
+            df = pandas.DataFrame({
+                "Batting Cumulative Average": cumulativebat,
+            })
+        elif batorbowl == "Bowling":
+            df = pandas.DataFrame({
+                "Bowling Cumulative Average": cumulativebowl,
+            })
+        else:
+            df = pandas.DataFrame({
+                "Batting Cumulative Average": cumulativebat,
+                "Bowling Cumulative Average": cumulativebowl,
+            })
+
+        fig = px.line(df, y="Batting Cumulative Average")
+
+
+        graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+        """
         # Convert plot to PNG image
         output = io.BytesIO()
         FigureCanvas(fig).print_png(output)
@@ -147,7 +169,7 @@ def main_page():
         # Encode PNG image to base64 string
         pngImageB64String = "data:image/png;base64,"
         pngImageB64String += base64.b64encode(output.getvalue()).decode('utf8')
-
+        """
         # To keep functionality if only chosing batting or bowling.
         if not cumulativebat:
             cumulativebat = [0]
@@ -156,10 +178,10 @@ def main_page():
 
         c.close()
 
-        return render_template("output.html", graph=pngImageB64String,
+        return render_template("output.html",
                                bowlmatchstats=bowlmatchstats, batmatchstats=batmatchstats, which=batorbowl,
                                batavg=round(cumulativebat[-1], 3), bowlavg=round(cumulativebowl[-1], 3),
-                               matches=matches)
+                               matches=matches, graphJSON=graphJSON)
     else:
         conn = sqlite3.connect("stats.db")
         c = conn.cursor()
