@@ -68,7 +68,6 @@ def main_page():
         bowlmatchstats = [('Innings Number', 'Match Date', 'Opposition', 'Ground', 'Runs Conceded', 'Wickets')]
         cumulativebat = []
         cumulativebowl = []
-        graphmax = 0
         batins = 0
         bowlins = 0
         totruns = 0
@@ -174,7 +173,7 @@ def main_page():
                     dataSets
             }
         )
-        # To keep functionality if only chosing batting or bowling.
+        # To keep functionality if only choosing batting or bowling.
         if not cumulativebat:
             cumulativebat = [0]
         if not cumulativebowl:
@@ -423,9 +422,9 @@ def rolling_page():
             }
         )
         # To keep functionality if only chosing batting or bowling.
-        if cumulativebat == []:
+        if not cumulativebat:
             cumulativebat = [0]
-        if cumulativebowl == []:
+        if not cumulativebowl:
             cumulativebowl = [0]
 
         return render_template("outputrolling.html",
