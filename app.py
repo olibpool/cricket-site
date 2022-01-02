@@ -1,9 +1,12 @@
 import base64
 import codecs
 import io
+import json
 import sqlite3
 import matplotlib.pyplot as plt
 import pandas
+import plotly
+import plotly.express as px
 from flask import Flask, request, render_template, flash, redirect
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
@@ -124,30 +127,56 @@ def main_page():
         dates = [x[1] for x in batmatchstats + bowlmatchstats]
         matches = len(set(dates)) - 1
 
-        # Plotting the data
-        plt.style.use('Solarize_Light2')
-        fig = plt.figure()
-        ax = fig.add_subplot()
-        if batorbowl in ["Batting", "Both"]:
-            ax.plot(range(1, batins + 1), cumulativebat, label="Batting average")
-        if batorbowl in ["Bowling", "Both"]:
-            ax.plot(range(1, bowlins + 1), cumulativebowl, label="Bowling average")
-        ax.set_xlim(1, max(batins, bowlins) + 0.5)
-        ax.set_ylim(0, graphmax + 5)
-        ax.set_xlabel('Number of innings')
-        ax.set_ylabel('Average')
-        ax.set_title(str(TestorODI) + ' averages for ' + str(name))
-        ax.legend()
-        ax.grid(alpha=100)
+        if batorbowl == 'both':
+            dataSets = ['Batting', 'Bowling']
+        else:
+            dataSets = [batorbowl]
 
-        # Convert plot to PNG image
-        output = io.BytesIO()
-        FigureCanvas(fig).print_png(output)
+        graphJSON = json.dumps(
+            {
+                "data":
+                    {
+                        "Batting":
+                            {
+                                "x": [x for x in range(1, batins + 1)],
+                                "y": cumulativebat,
+                                "name": "Batting"
+                            },
 
-        # Encode PNG image to base64 string
-        pngImageB64String = "data:image/png;base64,"
-        pngImageB64String += base64.b64encode(output.getvalue()).decode('utf8')
-
+                        "Bowling":
+                            {
+                                "x": [x for x in range(1, bowlins + 1)],
+                                "y": cumulativebowl,
+                                "name": "Bowling"
+                            }
+                    }
+                ,
+                "layout":
+                    {
+                        "title": str(TestorODI) + ' averages for ' + str(name),
+                        "xaxis": {
+                            'title': "Innings Number",
+                            'rangemode': 'tozero'
+                        },
+                        "yaxis": {
+                            'title': "Averages",
+                            'rangemode': 'tozero'
+                        },
+                        "showlegend": False,
+                        "colorway": ["#06d6a0", "#ef476f"],
+                        "plot_bgcolor": "#e4e1c9",
+                        "paper_bgcolor": "#fefae0"
+                    }
+                ,
+                "config":
+                    {
+                        "responsive": True
+                    }
+                ,
+                "batorbowl":
+                    dataSets
+            }
+        )
         # To keep functionality if only chosing batting or bowling.
         if not cumulativebat:
             cumulativebat = [0]
@@ -156,10 +185,10 @@ def main_page():
 
         c.close()
 
-        return render_template("output.html", graph=pngImageB64String,
+        return render_template("output.html",
                                bowlmatchstats=bowlmatchstats, batmatchstats=batmatchstats, which=batorbowl,
                                batavg=round(cumulativebat[-1], 3), bowlavg=round(cumulativebowl[-1], 3),
-                               matches=matches)
+                               matches=matches, graphJSON=graphJSON)
     else:
         conn = sqlite3.connect("stats.db")
         c = conn.cursor()
@@ -345,40 +374,66 @@ def rolling_page():
                     if rollingbowl[-1] > rollgraphmax:
                         rollgraphmax = rollingbowl[-1]
 
-        # Plotting the data
-        plt.style.use('Solarize_Light2')
-        fig = plt.figure()
-        ax = fig.add_subplot()
-        if batorbowl in ["Batting", "Both"]:
-            ax.plot(range(period, batins), rollingbat, label="Batting average")
-        if batorbowl in ["Bowling", "Both"]:
-            ax.plot(range(period, bowlins), rollingbowl, label="Bowling average")
-        ax.set_xlim(period, max(batins, bowlins) + 0.5)
-        ax.set_ylim(0, rollgraphmax + 5)
-        ax.set_xlabel('Number of innings')
-        ax.set_ylabel('Average')
-        ax.set_title("Rolling " + str(TestorODI) + ' averages for ' + str(name) + " period: " + str(period))
-        ax.legend()
-        ax.grid(alpha=100)
+        if batorbowl == 'both':
+            dataSets = ['Batting', 'Bowling']
+        else:
+            dataSets = [batorbowl]
 
-        # Convert plot to PNG image
-        output = io.BytesIO()
-        FigureCanvas(fig).print_png(output)
+        graphJSON = json.dumps(
+            {
+                "data":
+                    {
+                        "Batting":
+                            {
+                                "x": [x for x in range(period, batins + 1)],
+                                "y": rollingbat,
+                                "name": "Batting"
+                            },
 
-        # Encode PNG image to base64 string
-        pngImageB64String = "data:image/png;base64,"
-        pngImageB64String += base64.b64encode(output.getvalue()).decode('utf8')
-
+                        "Bowling":
+                            {
+                                "x": [x for x in range(period, bowlins + 1)],
+                                "y": rollingbowl,
+                                "name": "Bowling"
+                            }
+                    }
+                ,
+                "layout":
+                    {
+                        "title": "Rolling" + str(TestorODI) + ' averages for ' + str(name) +
+                                 ", period: " + str(period),
+                        "xaxis": {
+                            'title': "Innings Number",
+                            'rangmode': 'tozero'
+                        },
+                        "yaxis": {
+                            'title': "Rolling Averages",
+                            'rangemode': 'tozero'
+                        },
+                        "colorway": ["#06d6a0", "#ef476f"],
+                        "plot_bgcolor": "#e4e1c9",
+                        "paper_bgcolor": "#fefae0"
+                    }
+                ,
+                "config":
+                    {
+                        "responsive": True
+                    }
+                ,
+                "batorbowl":
+                    dataSets
+            }
+        )
         # To keep functionality if only chosing batting or bowling.
         if cumulativebat == []:
             cumulativebat = [0]
         if cumulativebowl == []:
             cumulativebowl = [0]
 
-        return render_template("outputrolling.html", graph=pngImageB64String,
+        return render_template("outputrolling.html",
                                bowlmatchstats=bowlmatchstats, batmatchstats=batmatchstats, which=batorbowl,
                                batavg=round(cumulativebat[-1], 3), bowlavg=round(cumulativebowl[-1], 3), period=period,
-                               matches=matches)
+                               matches=matches, graphJSON=graphJSON)
     else:
         conn = sqlite3.connect("stats.db")
         c = conn.cursor()
