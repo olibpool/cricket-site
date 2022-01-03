@@ -2,6 +2,7 @@ import codecs
 import json
 import sqlite3
 from flask import Flask, request, render_template, flash, redirect
+from flask_talisman import Talisman
 
 
 def quote_identifier(s, errors="strict"):
@@ -443,5 +444,8 @@ def rolling_page():
         return render_template('rolling.html', names=names)
 
 
+# Wrap Flask app with Talisman
+Talisman(app, content_security_policy=None)
+
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=False)
