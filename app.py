@@ -2,7 +2,7 @@ import codecs
 import json
 import sqlite3
 from flask import Flask, request, render_template, flash, redirect
-from flask_talisman import Talisman
+#from flask_talisman import Talisman
 
 
 def quote_identifier(s, errors="strict"):
@@ -448,4 +448,4 @@ def rolling_page():
 #Talisman(app, content_security_policy=None)
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run()
