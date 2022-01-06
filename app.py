@@ -50,8 +50,10 @@ def main_page():
         if nametest == '':
             msg = "Make sure to put in a player's name before clicking analyse!\n"
         else:
-            msg = "There is no player in the database called " + str(name) + \
-                  ".\nMake sure you use the standard format for scorecards (e.g 'Joe Root')."
+            msg = "There is no player in the " + str(TestorODI) + " database called " + str(name) + \
+                  ".\n\nMake sure you use the standard format for cricinfo scorecards (e.g 'JE Root'), " \
+                  "this is best done by entering the player's surname and selecting from the dropdown menu. \n\n " \
+                  "Also make sure that they have played a match in your chosen format!"
 
         if check is None:
             flash(msg)
@@ -118,9 +120,6 @@ def main_page():
 
                 bowlmatchstats.append((bowlins, date, opp, ground, bowlruns, wickets))
 
-        dates = [x[1] for x in batmatchstats + bowlmatchstats]
-        matches = len(set(dates)) - 1
-
         if batorbowl == 'both':
             dataSets = ['Batting', 'Bowling']
         else:
@@ -182,7 +181,7 @@ def main_page():
         return render_template("output.html",
                                bowlmatchstats=bowlmatchstats, batmatchstats=batmatchstats, which=batorbowl,
                                batavg=round(cumulativebat[-1], 3), bowlavg=round(cumulativebowl[-1], 3),
-                               matches=matches, graphJSON=graphJSON)
+                               graphJSON=graphJSON)
     else:
         conn = sqlite3.connect("stats.db")
         c = conn.cursor()
@@ -227,8 +226,11 @@ def rolling_page():
         if nametest == '':
             msg = "Make sure to put in a player's name before clicking analyse!\n"
         else:
-            msg = "There is no player in the database called " + str(name) + \
-                  ".\nMake sure you use the standard format for scorecards (e.g BA Stokes)."
+            msg = "There is no player in the " + str(TestorODI) + " database called " + str(name) + \
+                  ".\n\nMake sure you use the standard format for cricinfo scorecards (e.g 'JE Root'), " \
+                  "this is best done by entering the player's surname and selecting from the dropdown menu. \n\n " \
+                  "Also make sure that they have played a match in your chosen format!"
+
         if check is None:
             flash(msg)
             return redirect("/rolling")
@@ -324,9 +326,6 @@ def rolling_page():
                     graphmax = cumulativebowl[bowlins - 1]
 
                 bowlmatchstats.append((bowlins, date, opp, ground, bowlruns, wickets))
-
-        dates = [x[1] for x in batmatchstats + bowlmatchstats]
-        matches = len(set(dates)) - 1
 
         if batorbowl in ['Batting', 'Both']:
             for i in range(1, batins + 1):
@@ -427,7 +426,7 @@ def rolling_page():
         return render_template("outputrolling.html",
                                bowlmatchstats=bowlmatchstats, batmatchstats=batmatchstats, which=batorbowl,
                                batavg=round(cumulativebat[-1], 3), bowlavg=round(cumulativebowl[-1], 3), period=period,
-                               matches=matches, graphJSON=graphJSON)
+                               graphJSON=graphJSON)
     else:
         conn = sqlite3.connect("stats.db")
         c = conn.cursor()
