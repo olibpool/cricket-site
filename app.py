@@ -13,7 +13,7 @@ app: Flask = Flask(__name__)
 app.config['SECRET_KEY'] = sec_key
 
 if 'DYNO' in os.environ:  # only trigger if the app is running on Heroku
-    Talisman(app)  # redirects all requests to https
+    Talisman(app, content_security_policy=None)  # redirects all requests to https
 
 
 def quote_identifier(s, errors="strict"):
