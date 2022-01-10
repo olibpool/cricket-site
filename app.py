@@ -10,6 +10,7 @@ sec_key = secrets.token_urlsafe(16)
 app: Flask = Flask(__name__)
 app.config['SECRET_KEY'] = sec_key
 
+
 def quote_identifier(s, errors="strict"):
     encodable = s.encode("utf-8", errors).decode("utf-8")
 
@@ -138,6 +139,7 @@ def main_page():
         else:
             dataSets = [batorbowl]
 
+        # This is the data sent to the template in order to render the graph.
         graphJSON = json.dumps(
             {
                 "data":
@@ -385,6 +387,7 @@ def rolling_page():
         else:
             dataSets = [batorbowl]
 
+        # This is the data sent to the template in order to render the graph.
         graphJSON = json.dumps(
             {
                 "data":
@@ -431,9 +434,9 @@ def rolling_page():
             }
         )
         # To keep functionality if only chosing batting or bowling.
-        if cumulativebat == []:
+        if not cumulativebat:
             cumulativebat = [0]
-        if cumulativebowl == []:
+        if not cumulativebowl:
             cumulativebowl = [0]
 
         return render_template("outputrolling.html",

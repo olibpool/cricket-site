@@ -8,12 +8,6 @@ from time import sleep
 import dateparser
 import os
 
-# TODO Add comments
-
-# TODO add odi num 64473, 66013 manually
-# test 1104483 appears to have been deleted?
-# test https://stats.espncricinfo.com/ci/engine/match/64095.html needs to be added manually for some reason.
-
 path_to_dir = os.getcwd()
 
 db = sqlite3.connect(os.path.join(path_to_dir, "stats.db"))
@@ -205,7 +199,6 @@ def match_data_importer(matchformat, type):
         print("=========================================")
         sleep(sleeptime)
 
-
         with open(compPagePath, 'w') as filetowrite:
             filetowrite.write(str(pagenum))
 
@@ -214,11 +207,5 @@ match_data_importer(1, 'batting')
 match_data_importer(1, 'bowling')
 match_data_importer(2, 'batting')
 match_data_importer(2, 'bowling')
-
-# Remove duplicate rows
-# CREATE TABLE temp AS SELECT DISTINCT * FROM Test;
-# ALTER TABLE Test RENAME TO junk;
-# ALTER TABLE temp RENAME TO Test;
-# DROP TABLE junk;
 
 db.close()
