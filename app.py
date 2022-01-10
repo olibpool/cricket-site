@@ -2,6 +2,7 @@ import codecs
 import json
 import sqlite3
 from flask import Flask, request, render_template, flash, redirect
+import secrets
 #from flask_talisman import Talisman
 
 
@@ -19,9 +20,10 @@ def quote_identifier(s, errors="strict"):
 
     return "\"" + encodable.replace("\"", "\"\"") + "\""
 
+sec_key = secrets.token_urlsafe(16)
 
 app: Flask = Flask(__name__)
-app.config['SECRET_KEY'] = 'p2fAJzrORrIWVyRE3kI0eA'
+app.config['SECRET_KEY'] = sec_key
 
 
 @app.route('/', methods=['GET', 'POST'])
