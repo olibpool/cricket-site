@@ -3,7 +3,17 @@ import json
 import sqlite3
 from flask import Flask, request, render_template, flash, redirect
 import secrets
-#from flask_talisman import Talisman
+import os
+from flask_talisman import Talisman
+
+# Generate a completely random secret key
+sec_key = secrets.token_urlsafe(16)
+
+app: Flask = Flask(__name__)
+app.config['SECRET_KEY'] = sec_key
+
+if 'DYNO' in os.environ:  # only trigger if the app is running on Heroku
+    Talisman(app)  # redirects all requests to https
 
 
 def quote_identifier(s, errors="strict"):
@@ -19,11 +29,6 @@ def quote_identifier(s, errors="strict"):
         encodable = encodable.replace("\x00", replacement)
 
     return "\"" + encodable.replace("\"", "\"\"") + "\""
-
-sec_key = secrets.token_urlsafe(16)
-
-app: Flask = Flask(__name__)
-app.config['SECRET_KEY'] = sec_key
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -444,9 +449,6 @@ def rolling_page():
         c.close()
         return render_template('rolling.html', names=names)
 
-
-# Wrap Flask app with Talisman
-#Talisman(app, content_security_policy=None)
 
 if __name__ == '__main__':
     app.run()
