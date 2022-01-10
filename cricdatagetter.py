@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 import sqlite3
 from time import sleep
 import dateparser
-import os.path
+import os
 
 # TODO Add comments
 
@@ -14,9 +14,9 @@ import os.path
 # test 1104483 appears to have been deleted?
 # test https://stats.espncricinfo.com/ci/engine/match/64095.html needs to be added manually for some reason.
 
-path_to_dir = os.path.dirname(__file__)
+path_to_dir = os.getcwd()
 
-db = sqlite3.connect(path_to_dir + "/stats.db")
+db = sqlite3.connect(os.path.join(path_to_dir, "stats.db"))
 c: Cursor = db.cursor()
 
 
@@ -57,7 +57,9 @@ def stats(matchformat, type, pagenum):
 def match_data_importer(matchformat, type):
     # This function creates a list of matches that need to be added to the database
 
-    with open(path_to_dir + "/data/compPageNumber" + str(matchformat) + type + ".txt", "r") as f:
+    compPagePath = os.path.join(path_to_dir, 'data', 'compPageNumber') + str(matchformat) + type + ".txt"
+
+    with open(compPagePath, "r") as f:
         compPages = int(f.read())
 
     page = requests.get(
@@ -81,7 +83,9 @@ def match_data_importer(matchformat, type):
     print("Newest Page Num = " + str(newestPageNum))
     print()
 
-    with open(path_to_dir + "/data/lastData" + str(matchformat) + type + ".txt", 'r') as filetoread:
+    lastDataPath = os.path.join(path_to_dir, 'data', 'lastData') + str(matchformat) + type + ".txt"
+
+    with open(lastDataPath, 'r') as filetoread:
         lastData = ast.literal_eval(filetoread.read())
 
     for pagenum in range(compPages, newestPageNum + 1):
@@ -190,7 +194,7 @@ def match_data_importer(matchformat, type):
                                           wick4, wick5, wick10, buck, econ])
 
         if pagenum == newestPageNum:
-            with open(path_to_dir + "/data/lastData" + str(matchformat) + type + ".txt", 'w') as filetowrite:
+            with open(lastDataPath, 'w') as filetowrite:
                 filetowrite.write(str(page))
 
         db.commit()
@@ -201,7 +205,8 @@ def match_data_importer(matchformat, type):
         print("=========================================")
         sleep(sleeptime)
 
-        with open(path_to_dir + "/data/compPageNumber" + str(matchformat) + type + ".txt", 'w') as filetowrite:
+
+        with open(compPagePath, 'w') as filetowrite:
             filetowrite.write(str(pagenum))
 
 
