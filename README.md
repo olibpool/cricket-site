@@ -8,5 +8,3 @@ plotly.js via a JSON-string.
 This JSON string is then turned into an interactive graph on the output page and printed out alongside an innings by innings summary of the player's career.
 
 There is also a rolling average analyser on the /rolling route, which works in much the same way.
-
-To run this web app firstly make sure that you have all the necessary python packages installed and then it is a case of running python3 app.py
