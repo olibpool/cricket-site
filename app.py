@@ -201,7 +201,7 @@ def main_page():
         conn = sqlite3.connect("stats.db")
         c = conn.cursor()
 
-        c.execute("SELECT DISTINCT InningsPlayer FROM Test")
+        c.execute("SELECT InningsPlayer FROM Test UNION SELECT InningsPlayer FROM ODI")
 
         namesstart = c.fetchall()
         names = []
@@ -447,7 +447,7 @@ def rolling_page():
         conn = sqlite3.connect("stats.db")
         c = conn.cursor()
 
-        c.execute("SELECT DISTINCT InningsPlayer FROM Test")
+        c.execute("SELECT InningsPlayer FROM Test UNION SELECT InningsPlayer FROM ODI")
 
         namesstart = c.fetchall()
         names = []
