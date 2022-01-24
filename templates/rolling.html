@@ -8,6 +8,8 @@
     <p style="padding: 7%"></p>
     <h3>Rolling averages</h3>
     <h1>Enter the name of a cricket player:</h1>
+    <h5>Start by typing in the player's surname then select the correct player from the list.</h5>
+    <h6>Or type in their initials then surname if the player doesn't show up, e.g (SPD Smith for Steve Smith)</h6>
 {% endblock %}
 
 {%  block bodytext %}
@@ -48,7 +50,7 @@
 
             <div class="row justify-content-center mt-2">
                 <div class="col">
-                    <input class="btn btn-danger" type="submit" value="Analyse Rolling Averages!">
+                    <input class="btn btn-danger" type="submit" value="Analyse rolling averages!">
                 </div>
             </div>
 
@@ -70,7 +72,7 @@
     </div>
 
     <footer>
-        <a href="https://www.portent.com/blog/analytics/rolling-averages-math-moron.htm">Click here for an explantion of rolling averages.</a>
+        <a href="https://www.portent.com/blog/analytics/rolling-averages-math-moron.htm">Click here for an explanation of rolling averages.</a>
     </footer>
 
     <script>
@@ -114,8 +116,11 @@
                   (or any other open lists of autocompleted values:*/
                         closeAllLists();
                     });
-                    a.appendChild(b);
-                    boxes++;
+                    /* Only add 12 items to the autocomplete box */
+                    if (boxes < 12) {
+                        a.appendChild(b);
+                        boxes++;
+                    }
                 }
             }
         });

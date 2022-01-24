@@ -8,6 +8,8 @@
     <p style="padding: 7%"></p>
     <h3>Cumulative averages</h3>
     <h1>Enter the name of a cricket player:</h1>
+    <h5>Start by typing in the player's surname then select the correct player from the list.</h5>
+    <h6>Or type in their initials then surname if the player doesn't show up, e.g (SPD Smith for Steve Smith)</h6>
 {% endblock %}
 
 {%  block bodytext %}
@@ -107,8 +109,11 @@
                   (or any other open lists of autocompleted values:*/
                         closeAllLists();
                     });
-                    a.appendChild(b);
-                    boxes++;
+                    /* Only add 12 items to the autocomplete box */
+                    if (boxes < 12) {
+                        a.appendChild(b);
+                        boxes++;
+                    }
                 }
             }
         });
